@@ -1,23 +1,27 @@
-; p, q, and the like, are vectors.
-; TODO: implement `length`, `reduce-sum`, `elementwise-square`, `scalar-product`, and `element-add`.
-; TODO: implement `random-normal` and `random-uniform`
-
-(define (length vector) ...)
-(define (reduce-sum vector) ...)
-(define (elementwise-square vector) ...)
-(define (elementwise-add vector-1 vector-2) ...)
-(define (scalar-product scalar vector) ...)
-(define (random-normal size mu sigma) ...)
-(define (random-uniform min-value max-value) ...)
+(define (length vector) (vector-length vector))
+(define (reduce-sum vector)
+    (vector-fold (lambda (index summation x) (+ summation x)) 0 vector))
+(define (elementwise-square vector)
+    (define (square i x) (* x x))
+    (vector-map square vector))
+(define (elementwise-add vector-1 vector-2)
+    (vector-map (lambda (i x y) (+ x y) vector-1 vector-2)))
+(define (scalar-product scalar vector)
+    (define (prod-s i x) (* scalar x)
+    (vector-map prod-s vector)))
 
 (define (make-state p q) (cons p q))
 (define (get-p state) (car state))
 (define (get-q state) (cdr state))
 
 (define (K p) (* 0.5 (reduce-sum (elementwise-square p))))
+(define (sample-p size)
+    (define (sample i x) (- 1 (random-uniform 2)))
+    (define ones (vector size 1))
+    (vector-map sample ones))
 
 (define (hamiltonian-monte-carlo U grad-U epsilon L current-q)
-    (define current-p (random-normal (length current-q) 0 1))
+    (define current-p (sample-p (length current-q)))
     (define current-U (U current-q))
     (define current-K (K current-p))
 
@@ -45,6 +49,6 @@
           (q (get-q next-state))
           (proposed-U (U q))
           (proposed-K (K p))
-          (alpha (random-uniform 0 1)))
+          (alpha (uniform-random 1)))
          (if (< alpha (+ current-K current-U (* -1 proposed-K) (* -1 proposed-U)))
              q current-q)))
